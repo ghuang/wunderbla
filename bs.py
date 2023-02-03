@@ -1,15 +1,18 @@
 from bs4 import BeautifulSoup
 
 #with open('Vocabulaire_2023_1_5.htm') as fp:
-with open('Vocabulaire_2023_1_16.htm') as fp:
+#with open('Vocabulaire_2023_1_16.htm') as fp:
+#with open('Vocabulaire_bis_2023_2_3.htm') as fp:
+with open('Vocabulaire_2023_2_3.htm') as fp:
     soup = BeautifulSoup(fp, 'html.parser')
 
 with open('send_to_anki.txt', 'w') as f:
     for div in soup.find_all('div', {'class': 'a9l-box-vocabulary'}):
 
-        #if True:
+        if True:
+        #if 'ausging' in str(div):
         #if 'Prost' in str(div):
-        if 'empfehle' in str(div):
+        #if 'empfehle' in str(div):
         #if 'Wie geht es dir' in str(div):
         #if 'lecker' in str(div):
         #if 'evil' in str(div):
@@ -38,36 +41,59 @@ with open('send_to_anki.txt', 'w') as f:
                 for span in word.find_all('span', {'class': 'manual-trigger-request'}):
                     span.decompose()
 
-                if word.find_next_sibling('span'):
-                    conjug = None
-                    if word.find_next_sibling('span')['class'][0] != 'wordkc-tags-label':
-                        try:
-                            #conjug = BeautifulSoup(word.find_next_sibling('span')['data-content'], 'html.parser')
-                            conjug = BeautifulSoup(word.find_next_sibling('span')['title'], 'html.parser')
-                        except (TypeError, KeyError) as e:
-                            print(word.find_next_sibling('span'))
-                            raise e
-                    if conjug and conjug.find('div', {'class': 'conjugation-grid-cells'}):
-                        #print(conjug.div.get_text())
-                        #print(conjug.get_text())
-                        for span in conjug.find('div', {'class': 'conjugation-grid-cells'}).find_all('span'):
-                            formats = span.find('span', {'class': 'correct'})
-                            if formats:
-                                formats.name = 'b'
-                                del formats['class']
-                        conjug_table_list = []
-                        for span in conjug.find('div', {'class': 'conjugation-grid-cells'}).find_all('span'):
-                            conjug_table_list.append(''.join([str(p) for p in span.contents]))
-                        conjug_table.append('\n'.join(conjug_table_list).strip())
+                #if word.find_next_sibling('span'):
+                #    conjug = None
+                #    if word.find_next_sibling('span')['class'][0] != 'wordkc-tags-label':
+                #        try:
+                #            #conjug = BeautifulSoup(word.find_next_sibling('span')['data-content'], 'html.parser')
+                #            conjug = BeautifulSoup(word.find_next_sibling('span')['title'], 'html.parser')
+                #        except (TypeError, KeyError) as e:
+                #            print(word.find_next_sibling('span'))
+                #            raise e
+                #    if conjug and conjug.find('div', {'class': 'conjugation-grid-cells'}):
+                #        #print(conjug.div.get_text())
+                #        #print(conjug.get_text())
+                #        for cell in conjug.find_all('div', {'class': 'conjugation-grid-cells'}):
+                #            for span in cell.find_all('span'):
+                #                formats = span.find('span', {'class': 'correct'})
+                #                if formats:
+                #                    formats.name = 'b'
+                #                    del formats['class']
+                #            conjug_table_list = []
+                #            for span in conjug.find('div', {'class': 'conjugation-grid-cells'}).find_all('span'):
+                #                conjug_table_list.append(''.join([str(p) for p in span.contents]))
+                #            conjug_table.append('\n'.join(conjug_table_list).strip())
 
-            if conjug_table:
-                titles = div.find_all(class_='icon-tooltip conjugation-tooltip a9tooltip')
-                if titles:
-                    titles = [title.get_text() for title in titles]
-                assert len(conjug_table) == len(titles)
-                conjug_table  = '\n'.join([f'{a}\n{b}' for a, b in zip(titles, conjug_table)])
-                #conjug_table = '\n'.join([titles, conjug_table])
-                #print(conjug_table)
+            spans = div.find_all(class_='icon-tooltip conjugation-tooltip a9tooltip')
+            if spans:
+                titles = [title.get_text() for title in spans]
+                #print(titles)
+                for span in spans:
+                    conjug = BeautifulSoup(span['title'], 'html.parser')
+                    for cell in conjug.find('div', {'class': 'conjugation-grid-cells'}).find_all('span'):
+                        formats = cell.find('span', {'class': 'correct'})
+                        if formats:
+                            formats.name = 'b'
+                            del formats['class']
+                    conjug_table_list = []
+                    for span in conjug.find('div', {'class': 'conjugation-grid-cells'}).find_all('span'):
+                        conjug_table_list.append(''.join([str(p) for p in span.contents]))
+                    conjug_table.append('\n'.join(conjug_table_list).strip())
+                conjug_table  = '\n\n'.join([f'{a}\n{b}' for a, b in zip(titles, conjug_table)])
+
+            #if conjug_table:
+            #    titles = div.find_all(class_='icon-tooltip conjugation-tooltip a9tooltip')
+            #    if titles:
+            #        titles = [title.get_text() for title in titles]
+            #    try:
+            #        assert len(conjug_table) == len(titles)
+            #    except AssertionError:
+            #        print(conjug_table)
+            #        print(titles)
+            #        raise
+            #    conjug_table  = '\n'.join([f'{a}\n{b}' for a, b in zip(titles, conjug_table)])
+            #    #conjug_table = '\n'.join([titles, conjug_table])
+            #    #print(conjug_table)
 
 
             #if conjug and conjug.find('div', {'class': ''}):
@@ -91,8 +117,8 @@ with open('send_to_anki.txt', 'w') as f:
                     comments.append(word)
             #print(german)
             #print(english)
-            for comment in comments:
-                print(comment)
+            #for comment in comments:
+            #    print(comment)
 
             #len_notes = len(words) - 2*len(audio_src) if len(audio_src) else 0
             #try:
@@ -144,7 +170,7 @@ with open('send_to_anki.txt', 'w') as f:
                     for span in comment.find_all('span', {'class': 'icon-tooltip a9tooltip'}):
                         #popup_text = ' '.join([str(pp).strip() for pp in span.contents])
                         popup_text = ': '.join([span.contents[0], span['title']])
-                        print(popup_text)
+                        #print(popup_text)
                         span.decompose()
                         #comment.insert(-1, popup_text)
                         comment.contents.append('<br>'+popup_text)
